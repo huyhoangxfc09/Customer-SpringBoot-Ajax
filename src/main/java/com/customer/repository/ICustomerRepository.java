@@ -1,6 +1,8 @@
 package com.customer.repository;
 
 import com.customer.model.Customer;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Modifying;
 import org.springframework.data.jpa.repository.Query;
@@ -18,4 +20,10 @@ public interface ICustomerRepository extends JpaRepository<Customer,Long> {
     @Modifying
     @Query(value = "update Customer as  c set c.status = false where c.id = :id")
     void removeCustomer(@Param("id")Long id);
+    Page<Customer> findAll(Pageable pageable);
+    Page<Customer> findAllByNameContaining(String name,Pageable pageable);
+
+
+//    @Query(value = "select c from Customer as c where c.name like :name")
+//    Page<Customer> findByNamePag(@Param("name") String name,Pageable pageable);
 }

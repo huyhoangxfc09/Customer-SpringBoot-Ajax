@@ -1,10 +1,44 @@
     function findAllCustomer(){
         $.ajax({
-            url: "http://localhost:8080/customers",
+            // headers: {
+            //     Authorization: "Bearer " + sessionStorage.getItem("token"),
+            // },
             type: "GET",
+            url: "http://localhost:8080/customers",
             success(data){
-                console.log(data)
-                let context = `<div class="container">
+                displayCustomer(data)
+                $("#customerForm").hide()
+                $("#customer").show()
+            }
+        })
+    }
+
+    function findAllCustomerPage(page){
+        $.ajax({
+            headers: {
+                Authorization: "Bearer " + sessionStorage.getItem("token"),
+            },
+            type: "GET",
+            url: "http://localhost:8080/customers/page?page=" + page + "&size=2",
+            success(data){
+
+                displayCustomer(data.content)
+                console.log(data.content)
+                displayPage(data)
+                if (data.pageable.pageNumber === 0) {
+                    document.getElementById("backup").hidden = true
+                }
+                //điều kiện bỏ nút next
+                if (data.pageable.pageNumber + 1 === data.totalPages) {
+                    document.getElementById("next").hidden = true
+                }
+                $("#customerForm").hide()
+                $("#customer").show()
+            }
+        })
+    }
+    function displayCustomer(data){
+        let context = `<div class="container">
                                                     <h2 style="text-align: center">List Customer</h2>
                                                     <table class="table table-striped-columns">
                                                     <thead>
@@ -18,8 +52,8 @@
                                                         </tr>
                                                     </thead>
                                                    <tbody>`
-                for (let i = 0; i < data.length; i++){
-                    context+= `<tr>
+        for (let i = 0; i < data.length; i++){
+            context+= `<tr>
                                                    <td>${i+1}</td>
                                                    <td><img src="${data[i].imagePath}" style="width: 100px; height: 100px" alt="Picture"></td>
                                                    <td>${data[i].name}</td>
@@ -28,13 +62,24 @@
                                                    <td><button class="btn btn-warning" onclick="updateFormCustomer(${data[i].id})">Update</button></td>
                                                    <td><button class="btn btn-danger" onclick="deleteCustomer(${data[i].id})">Delete</button></td>
                                                </tr>`
-                }
-                context+= `</tbody> </table> </div>`
-                document.getElementById("customer").innerHTML = context
-                $("#customerForm").hide()
-                $("#customer").show()
-            }
-        })
+        }
+        context+= `</tbody> </table> </div>`
+        document.getElementById("customer").innerHTML = context
+    }
+    function displayPage(data){
+        let content = `<button class="btn btn-primary" id="backup" onclick="isPrevious(${data.pageable.pageNumber})">Previous</button>
+    <span>${data.pageable.pageNumber+1} | ${data.totalPages}</span>
+    <button class="btn btn-primary" id="next" onclick="isNext(${data.pageable.pageNumber})">Next</button>`
+        document.getElementById('page').innerHTML = content;
+    }
+    //hàm lùi page
+    function isPrevious(pageNumber) {
+        findAllCustomerPage(pageNumber-1)
+    }
+
+    //hàm tiến page
+    function isNext(pageNumber) {
+        findAllCustomerPage(pageNumber+1)
     }
     function backToCustomer() {
         $("#customerForm").hide()
@@ -74,7 +119,7 @@
            data: formData,
            success() {
                alert("Success!")
-               findAllCustomer()
+               findAllCustomerPage(0)
            }
        })
        event.preventDefault()
@@ -121,7 +166,7 @@
             data: formData,
             success() {
                 alert("Success!")
-                findAllCustomer()
+                findAllCustomerPage(0)
             }
         })
         event.preventDefault()
@@ -143,4 +188,69 @@
             })
         }
         event.preventDefault()
+    }
+    function searchByName(page) {
+        let search = $("#search").val()
+        $.ajax({
+            // headers: {
+            //     Authorization: "Bearer " + sessionStorage.getItem("token"),
+            // },
+            type: "GET",
+            url: "http://localhost:8080/customers/search?search=" + search+"&page="+ page + "&size=2",
+            success: function (data) {
+                displayCustomerByName(data.content)
+                displayPageSearch(data)
+                if (data.pageable.pageNumber === 0) {
+                    document.getElementById("backup").hidden = true
+                }
+                //điều kiện bỏ nút next
+                if (data.pageable.pageNumber + 1 === data.totalPages) {
+                    document.getElementById("next").hidden = true
+                }
+                $("#customerForm").hide()
+                $("#customer").hide()
+            }
+        })
+    }
+    function displayCustomerByName(data){
+        let context = `<div class="container">
+                                                    <h2 style="text-align: center">List Customer</h2>
+                                                    <table class="table table-striped-columns">
+                                                    <thead>
+                                                        <tr>
+                                                          <th>STT</th>
+                                                          <th>Image</th>
+                                                          <th>Name</th>
+                                                          <th>Age</th>
+                                                          <th>Address</th>
+                                                          <th colspan="2" style="text-align: center">Action</th>
+                                                        </tr>
+                                                    </thead>
+                                                   <tbody>`
+        for (let i = 0; i < data.length; i++){
+            context+= `<tr>
+                                                   <td>${i+1}</td>
+                                                   <td><img src="${data[i].imagePath}" style="width: 100px; height: 100px" alt="Picture"></td>
+                                                   <td>${data[i].name}</td>
+                                                   <td>${data[i].age}</td>
+                                                   <td>${data[i].address}</td>
+                                                   <td><button class="btn btn-warning" onclick="updateFormCustomer(${data[i].id})">Update</button></td>
+                                                   <td><button class="btn btn-danger" onclick="deleteCustomer(${data[i].id})">Delete</button></td>
+                                               </tr>`
+        }
+        context+= `</tbody> </table> </div>`
+        document.getElementById("searchByName").innerHTML = context
+    }
+    function displayPageSearch(data){
+        let content = `<button class="btn btn-primary" id="backup" onclick="isPreviousByName(${data.pageable.pageNumber})">Previous</button>
+    <span>${data.pageable.pageNumber+1} | ${data.totalPages}</span>
+    <button class="btn btn-primary" id="next" onclick="isNextByName(${data.pageable.pageNumber})">Next</button>`
+        document.getElementById('pageSearch').innerHTML = content;
+    }
+    function isPreviousByName(pageNumber) {
+        searchByName(pageNumber-1)
+    }
+
+    function isNextByName(pageNumber) {
+        searchByName(pageNumber+1)
     }

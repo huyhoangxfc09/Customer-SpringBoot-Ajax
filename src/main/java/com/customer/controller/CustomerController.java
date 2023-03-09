@@ -5,6 +5,9 @@ import com.customer.service.my_interface.ICustomerService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.PropertySource;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
+import org.springframework.data.web.PageableDefault;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.util.FileCopyUtils;
@@ -19,21 +22,25 @@ import java.util.List;
 @CrossOrigin("*")
 @RequestMapping("/customers")
 @PropertySource("classpath:application.properties")
-public class CustomerService {
+public class CustomerController {
     @Autowired
     private ICustomerService customerService;
-    @Value("${upload.path}")
-    private String link;
 
-    @Value("${display.path}")
-    private String displayLink;
-    @GetMapping
-    public ResponseEntity<List<Customer>> findAll(){
-        List<Customer> customers = customerService.findAll();
-        if (customers.isEmpty()){
-            return new ResponseEntity<>(HttpStatus.NO_CONTENT);
-        }
-        return new ResponseEntity<>(customers,HttpStatus.OK);
+//    @GetMapping
+//    public ResponseEntity<List<Customer>> findAll(){
+//        List<Customer> customers = customerService.findAll();
+//        if (customers.isEmpty()){
+//            return new ResponseEntity<>(HttpStatus.NO_CONTENT);
+//        }
+//        return new ResponseEntity<>(customers,HttpStatus.OK);
+//    }
+    @GetMapping("/page")
+    public ResponseEntity<Page<Customer>> findAll(@PageableDefault(size = 2) Pageable pageable) {
+        return new ResponseEntity<>(customerService.findAllPage(pageable), HttpStatus.OK);
+    }
+    @GetMapping("/search")
+    public ResponseEntity<Page<Customer>> findAll(@RequestParam("search") String search,@PageableDefault(size = 2) Pageable pageable) {
+        return new ResponseEntity<>(customerService.findAllByNameContaining(search,pageable), HttpStatus.OK);
     }
     @GetMapping("/{id}")
     public ResponseEntity<Customer> findById(@PathVariable Long id){
@@ -47,18 +54,8 @@ public class CustomerService {
     @PostMapping("/save")
     public ResponseEntity<Customer> saveCustomer(@RequestPart(value = "file", required = false) MultipartFile file,
                                                  @RequestPart("customer") Customer customer){
-        if (file != null) {
-            String fileName = file.getOriginalFilename();
-            try {
-                FileCopyUtils.copy(file.getBytes(), new File(link + fileName));
-            } catch (IOException ex) {
-                ex.printStackTrace();
-            }
-            customer.setImagePath(displayLink + fileName);
-        } else {
-            customer.setImagePath(displayLink + "default.jpg");
-        }
-        return new ResponseEntity<>(customerService.save(customer), HttpStatus.CREATED);
+
+        return new ResponseEntity<>(customerService.save(file,customer), HttpStatus.CREATED);
     }
     @DeleteMapping("/delete/{id}")
     public ResponseEntity<Customer> deleteCustomer(@PathVariable Long id){
