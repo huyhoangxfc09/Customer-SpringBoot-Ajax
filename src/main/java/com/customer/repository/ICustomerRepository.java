@@ -20,8 +20,10 @@ public interface ICustomerRepository extends JpaRepository<Customer,Long> {
     @Modifying
     @Query(value = "update Customer as  c set c.status = false where c.id = :id")
     void removeCustomer(@Param("id")Long id);
+    @Query(value = "select c from Customer as c where c.status = true ")
     Page<Customer> findAll(Pageable pageable);
-    Page<Customer> findAllByNameContaining(String name,Pageable pageable);
+    @Query(value = "select c from Customer as c where c.status = true and c.name like :name ")
+    Page<Customer> findByNameCustomer(@Param("name") String name, Pageable pageable);
 
 
 //    @Query(value = "select c from Customer as c where c.name like :name")

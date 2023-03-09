@@ -1,8 +1,8 @@
     function findAllCustomer(){
         $.ajax({
-            // headers: {
-            //     Authorization: "Bearer " + sessionStorage.getItem("token"),
-            // },
+            headers: {
+                Authorization: "Bearer " + sessionStorage.getItem("token"),
+            },
             type: "GET",
             url: "http://localhost:8080/customers",
             success(data){
@@ -108,6 +108,9 @@
            new Blob([JSON.stringify(customer)], {type: 'application/json'}))
        console.log(customer)
        $.ajax({
+           headers: {
+               Authorization: "Bearer " + sessionStorage.getItem("token"),
+           },
            // headers: {
            //     'Accept': 'application/json',
            //     'Content-Type': 'application/json'
@@ -127,6 +130,9 @@
 
    function updateFormCustomer(id) {
        $.ajax({
+           headers: {
+               Authorization: "Bearer " + sessionStorage.getItem("token"),
+           },
            url : `http://localhost:8080/customers/${id}`,
            type: "GET",
            success(data) {
@@ -156,9 +162,12 @@
         console.log(customer)
         $.ajax({
             headers: {
-                // 'Accept': 'application/json',
-                // 'Content-Type': 'application/json'
+                Authorization: "Bearer " + sessionStorage.getItem("token"),
             },
+            // headers: {
+            //     // 'Accept': 'application/json',
+            //     // 'Content-Type': 'application/json'
+            // },
             contentType: false,
             processData: false,
             url: "http://localhost:8080/customers/save",
@@ -175,8 +184,9 @@
         if (confirm("Do you want to delete ?")){
             $.ajax({
                 headers: {
-                    'Accept': 'application/json',
-                    'Content-Type': 'application/json',
+                    // 'Accept': 'application/json',
+                    // 'Content-Type': 'application/json',
+                    Authorization: "Bearer " + sessionStorage.getItem("token"),
                 },
                 url: `http://localhost:8080/customers/delete/${id}`,
                 type: "DELETE",
@@ -192,9 +202,9 @@
     function searchByName(page) {
         let search = $("#search").val()
         $.ajax({
-            // headers: {
-            //     Authorization: "Bearer " + sessionStorage.getItem("token"),
-            // },
+            headers: {
+                Authorization: "Bearer " + sessionStorage.getItem("token"),
+            },
             type: "GET",
             url: "http://localhost:8080/customers/search?search=" + search+"&page="+ page + "&size=2",
             success: function (data) {
